@@ -114,6 +114,7 @@ func hangupServer(t testing.TB, bufsize int) net.Listener {
 }
 
 func TestEchoTiny(t *testing.T) {
+	t.Log("start TestEchoTiny")
 	ln := echoServer(t, 1)
 	defer ln.Close()
 	conn, err := net.Dial("tcp", ln.Addr().String())
@@ -138,6 +139,7 @@ func TestEchoTiny(t *testing.T) {
 }
 
 func TestDeadline(t *testing.T) {
+	t.Log("start TestDeadline")
 	w, err := NewWatcher()
 	if err != nil {
 		t.Fatal(err)
@@ -146,6 +148,7 @@ func TestDeadline(t *testing.T) {
 }
 
 func TestEmptyBuffer(t *testing.T) {
+	t.Log("start TestEmptyBuffer")
 	ln := echoServer(t, 1)
 	defer ln.Close()
 
@@ -171,6 +174,7 @@ func TestEmptyBuffer(t *testing.T) {
 }
 
 func TestUnsupportedConn(t *testing.T) {
+	t.Log("start TestUnsupportedConn")
 	ln := echoServer(t, 1)
 	defer ln.Close()
 
@@ -293,6 +297,7 @@ WRITETEST:
 }
 
 func TestEchoHuge(t *testing.T) {
+	t.Log("start TestEchoHuge")
 	ln := echoServer(t, 65536)
 	defer ln.Close()
 	conn, err := net.Dial("tcp", ln.Addr().String())
@@ -324,6 +329,7 @@ func TestEchoHuge(t *testing.T) {
 }
 
 func TestBidirectionWatcher(t *testing.T) {
+	t.Log("start TestBidirectionWatcher")
 	w, err := NewWatcher()
 	if err != nil {
 		t.Fatal(err)
@@ -333,6 +339,7 @@ func TestBidirectionWatcher(t *testing.T) {
 }
 
 func testBidirectionWatcher(t *testing.T, w *Watcher) {
+	t.Log("start testBidirectionWatcher")
 	ln := echoServer(t, 65536)
 	defer ln.Close()
 	conn, err := net.Dial("tcp", ln.Addr().String())
@@ -384,6 +391,7 @@ func testBidirectionWatcher(t *testing.T, w *Watcher) {
 }
 
 func TestReadFull(t *testing.T) {
+	t.Log("start TestReadFull")
 	ln := echoServer(t, 65536)
 	defer ln.Close()
 	conn, err := net.Dial("tcp", ln.Addr().String())
@@ -449,6 +457,7 @@ func TestReadFull(t *testing.T) {
 }
 
 func TestSocketClose(t *testing.T) {
+	t.Log("start TestSocketClose")
 	ln := echoServer(t, 1024)
 	defer ln.Close()
 	conn, err := net.Dial("tcp", ln.Addr().String())
@@ -492,6 +501,7 @@ func TestSocketClose(t *testing.T) {
 }
 
 func TestWriteOnClosedConn(t *testing.T) {
+	t.Log("start TestWriteOnClosedConn")
 	ln := echoServer(t, 1024)
 	defer ln.Close()
 	conn, err := net.Dial("tcp", ln.Addr().String())
@@ -536,37 +546,46 @@ func TestWriteOnClosedConn(t *testing.T) {
 }
 
 func Test1k(t *testing.T) {
+	t.Log("start Test1k")
 	testParallel(t, 1024, 1024)
 }
 func Test2k(t *testing.T) {
+	t.Log("start Test2k")
 	testParallel(t, 2048, 1024)
 }
 
 func Test4k(t *testing.T) {
+	t.Log("start Test4k")
 	testParallel(t, 4096, 1024)
 }
 
 func Test8k(t *testing.T) {
+	t.Log("start Test8k")
 	testParallel(t, 8192, 1024)
 }
 
 func Test10k(t *testing.T) {
+	t.Log("start Test10k")
 	testParallel(t, 10240, 1024)
 }
 
 func Test12k(t *testing.T) {
+	t.Log("start Test12k")
 	testParallel(t, 12288, 1024)
 }
 
 func Test1kTiny(t *testing.T) {
+	t.Log("start Test1kTiny")
 	testParallel(t, 1024, 16)
 }
 
 func Test2kTiny(t *testing.T) {
+	t.Log("start Test2kTiny")
 	testParallel(t, 2048, 16)
 }
 
 func Test4kTiny(t *testing.T) {
+	t.Log("start Test4kTiny")
 	testParallel(t, 4096, 16)
 }
 
@@ -637,10 +656,12 @@ func testParallel(t *testing.T, par int, msgsize int) {
 }
 
 func Test10kRandomSwapBuffer(t *testing.T) {
+	t.Log("start Test10kRandomSwapBuffer")
 	testParallelRandomInternal(t, 10240, 1024, false)
 }
 
 func Test10kCompleteSwapBuffer(t *testing.T) {
+	t.Log("start Test10kCompleteSwapBuffer")
 	testParallelRandomInternal(t, 10240, 1024, true)
 }
 
@@ -659,6 +680,7 @@ func testParallelRandomInternal(t *testing.T, par int, msgsize int, allswap bool
 		for i := 0; i < par; i++ {
 			data := make([]byte, msgsize)
 			conn, err := net.Dial("tcp", ln.Addr().String())
+			t.Log("debug debug ", err)
 			if err != nil {
 				log.Fatal(err)
 			}
