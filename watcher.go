@@ -1,3 +1,4 @@
+//go:build linux || darwin || netbsd || freebsd || openbsd || dragonfly
 // +build linux darwin netbsd freebsd openbsd dragonfly
 
 // Package gaio is an Async-IO library for Golang.
@@ -161,8 +162,7 @@ func (w *watcher) WaitIO() (r []OpResult, err error) {
 		w.resultsMutex.Lock()
 		if len(w.results[w.resultsIdx]) > 0 {
 			r = w.results[w.resultsIdx]
-			w.resultsIdx = (w.resultsIdx + 1) % len(w.results)
-			w.results[w.resultsIdx] = w.results[w.resultsIdx][:0]
+			w.switchResults()
 			for _, hangup := range w.hangups {
 				close(hangup)
 			}
@@ -179,6 +179,17 @@ func (w *watcher) WaitIO() (r []OpResult, err error) {
 			return r, ErrWatcherClosed
 		}
 	}
+}
+
+// changeResult 外部锁
+func (w *watcher) switchResults() {
+	w.resultsIdx = (w.resultsIdx + 1) % len(w.results)
+	results := w.results[w.resultsIdx]
+	for i := 0; i < len(results); i++ {
+		// avoid memory leak
+		results[i].Context = nil
+	}
+	w.results[w.resultsIdx] = results[:0]
 }
 
 // Read submits an async read request on 'fd' with context 'ctx', using buffer 'buf'.
@@ -391,6 +402,9 @@ func (w *watcher) deliver(pcb *aiocb) {
 	}
 	w.resultsMutex.Unlock()
 
+	// avoid memory leak
+	pcb.ctx = nil
+
 	// trigger event notification
 	select {
 	case w.chNotifyCompletion <- struct{}{}:
@@ -423,7 +437,7 @@ func (w *watcher) loop() {
 			// swap w.pending with w.pending2
 			w.pendingMutex.Lock()
 			w.pendingCreate, w.pendingProcessing = w.pendingProcessing, w.pendingCreate
-			w.pendingCreate = w.pendingCreate[:0]
+			w.pendingCreate = dereferenceSliceElem(w.pendingCreate)
 			w.pendingMutex.Unlock()
 			w.handlePending(w.pendingProcessing)
 
@@ -609,4 +623,11 @@ func (w *watcher) handleEvents(pe pollerEvents) {
 			}
 		}
 	}
+}
+
+func dereferenceSliceElem[T any](sliceList []*T) []*T {
+	for i := 0; i < len(sliceList); i++ {
+		sliceList[i] = nil
+	}
+	return sliceList[:0]
 }
